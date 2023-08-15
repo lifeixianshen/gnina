@@ -20,12 +20,11 @@ def get_time(out):
     utility
     '''
     tstring = ''
-    
+
     for char in out:
         if char == "\n":
             if tstring.startswith('Loop time'):
                 return float(tstring.split()[-1])
-                break
             else:
                 tstring = ''
         else:
@@ -67,8 +66,8 @@ def run_command(cmd, *args):
             sys.exit()
         else:
             if not os.path.dirname(cmd):
-                cmd = './' + cmd
-    return local[cmd][[arg for arg in args]]()
+                cmd = f'./{cmd}'
+    return local[cmd][list(args)]()
 
 parser = argparse.ArgumentParser(description='Generates gnina speedup figure')
 

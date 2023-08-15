@@ -13,17 +13,16 @@ def test_groups():
 
     caffe.set_random_seed(800)
     caffe.set_mode_gpu()
-   
-    
+
+
     def runmodel(model):
-        m = open('tmp.model','w')
-        m.write(model)
-        m.close()
+        with open('tmp.model','w') as m:
+            m.write(model)
         net = caffe.Net('tmp.model',caffe.TRAIN)
         res = net.forward()
         os.remove('tmp.model')
         return res,net
-    
+
     #plain
     res, net = runmodel('''layer {
       name: "data"
@@ -51,7 +50,7 @@ def test_groups():
     assert list(seqcont[1]) == [1,1]
     assert data[3][0].sum() == 0
     assert data[3][1].sum() == 0
-    
+
     res = net.forward()
     labels = res['label']
     seqcont = res['seqcont']
@@ -62,7 +61,7 @@ def test_groups():
     assert list(seqcont[1]) == [1,1]
     assert data[3][0].sum() > 0
     assert data[3][1].sum() > 0
-    
+
     #with chunks
     res, net = runmodel('''layer {
       name: "data"
@@ -93,7 +92,7 @@ def test_groups():
     assert data[0][1].sum() > 0
     assert data[1][0].sum() > 0
     assert data[1][1].sum() > 0
-    
+
     res = net.forward()
     labels = res['label']
     seqcont = res['seqcont']

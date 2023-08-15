@@ -22,7 +22,7 @@ def are_similar(xyz, sdf):
     mola = next(pybel.readfile('xyz',xyz))
     molb = next(pybel.readfile('sdf',sdf))
     #do an n^s comparison, ensure bijection
-    atommap = dict()
+    atommap = {}
     bseen = set()
     for a in mola.atoms:
         for b in molb.atoms:            

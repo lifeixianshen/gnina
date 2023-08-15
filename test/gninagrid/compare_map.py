@@ -2,6 +2,7 @@
 
 '''Compare two map files'''
 
+
 import sys
 import pytest
 
@@ -11,11 +12,11 @@ f1 = open(sys.argv[1])
 f2 = open(sys.argv[2])
 
 #6 lines of Header
-for i in range(6):
+for _ in range(6):
     l1 = f1.readline()
     l2 = f2.readline()
     assert l1 == l2
-    
+
 #single flots
 for l1 in f1:
     l2 = f2.readline()

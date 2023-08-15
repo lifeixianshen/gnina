@@ -33,25 +33,22 @@ extraction from sdsorter output')
 parser.set_defaults(cpu_on=True, old_format=False)
 args = parser.parse_args()
 
-if args.old_format:
-    column = 3
-else: 
-    column = 4
+column = 3 if args.old_format else 4
 # Check correctness; generate plot if under the threshold
 # TODO: print more specific info about how many ligands differed and the
 # expected value of the deviation
 fig,ax = plt.subplots()
 if not args.structures:
-    cpu_cmd = local[os.getcwd() + '/%s' % args.input[0]]
+    cpu_cmd = local[f'{os.getcwd()}/{args.input[0]}']
     cpu = cpu_cmd["-r", args.receptor, "-l", args.ligand, "-o",
             args.input[0].split(".")[0] + "_cpu_out.sdf", "--minimize"]
     cpu()
     get_cpu_out = sdsorter['-print','-omit-header',args.input[0].split(".")[0] +
     "_cpu_out.sdf"] | awk["{print $%s}" % column]
     cpu_out = np.array([float(x) for x in get_cpu_out().split()])
-    
+
     for file in args.input:
-        cmd = local[os.getcwd() + '/%s' % file]
+        cmd = local[f'{os.getcwd()}/{file}']
         gpu = cmd["-r", args.receptor, "-l", args.ligand, "-o",
                 file.split(".")[0] + "_gpu_out.sdf", "--minimize", "--gpu"]
         gpu()
@@ -63,25 +60,24 @@ if not args.structures:
     ax.set_xlabel('CPU-calculated energy')
     ax.set_ylabel('GPU-calculated energy')
 else:
-    outputs = {}
     get_cpu_out = sdsorter['-print','-omit-header',args.structures[0]] |\
     awk["{print $%s}" % column]
     cpu_out = np.array([float(x) for x in get_cpu_out().split()])
-    outputs[args.structures[0].split('.')[0]] = cpu_out
+    outputs = {args.structures[0].split('.')[0]: cpu_out}
     for file in args.structures[1:]:
         get_gpu_out = sdsorter['-print','-omit-header',file] |\
         awk["{print $%s}" % column]
         gpu_out = np.array([float(x) for x in get_gpu_out().split()])
         outputs[file.split('.')[0]] = gpu_out
     outname = ''
-    for item in outputs.keys():
+    for item in outputs:
         if item != args.structures[0].split('.')[0]:
-            outname += '%s, ' % item
+            outname += f'{item}, '
         best = -1.0
         best_id = ''
         worst = 1.0
         worst_id = ''
-        for other_item in outputs.keys():
+        for other_item in outputs:
             if item != other_item:
                 correlation = pearsonr(outputs[other_item], outputs[item])[0]
                 if correlation > best:

@@ -16,20 +16,20 @@ def test_molgrid():
     #these might change
     LIGCHANNELS = 19
     RECCHANNELS = 16
-    
-    
+
+
     def runmodel(model):
-        m = open('tmp.model','w')
-        m.write(model)
-        m.close()
+        with open('tmp.model','w') as m:
+            m.write(model)
         net = caffe.Net('tmp.model',caffe.TRAIN)
         res = net.forward()
         os.remove('tmp.model')
         return res,net
-    
-    
-    
-    
+
+
+
+        
+
     #plain
     res, net = runmodel('''layer {
       name: "data"
@@ -47,12 +47,12 @@ def test_molgrid():
       }
     }''')
     labels = res['label']
-    
+
     assert list(labels) == [1., 1., 1., 1., 0., 0., 0., 0., 0., 0.]
-    
+
     labels2 = net.forward()['label']
     assert list(labels2) == [1., 1., 1., 1., 0., 0., 0., 0., 0., 0.]
-    
+
     #balanced
     labels = runmodel('''layer {
       name: "data"
@@ -69,10 +69,10 @@ def test_molgrid():
         root_folder: "typesfiles"
       }
     }''')[0]['label']
-    
+
     assert list(labels) == [1., 0., 1., 0., 1., 0., 1., 0., 1., 0.]
-    
-    
+
+
     #shuffled
     res, net = runmodel('''layer {
       name: "data"
@@ -92,7 +92,7 @@ def test_molgrid():
     labels = list(res['label'])
     labels2 = list(net.forward()['label'])
     assert labels != labels2
-    
+
     #stratify by receptor
     res, net = runmodel('''layer {
       name: "data"
@@ -112,9 +112,9 @@ def test_molgrid():
         root_folder: "typesfiles"
       }
     }''')
-    
+
     assert list(res['affinity']) == approx([ 3.2, -5. ,  6. , -4. ,  4.2,  2. , -8.2, -1. ])
-    
+
     #balanced stratified - will drop some receptors without both true/false examples
     res, net = runmodel('''layer {
       name: "data"
@@ -136,7 +136,7 @@ def test_molgrid():
     }''')
     assert list(res['affinity']) == approx([-5. ,  2. ,  6. , -8.2, -5. , -3. ,  6. , -8.2])
     assert list(res['label']) == approx([1., 0., 1., 0., 1., 0., 1., 0.])
-    
+
     #stratify by affinity, also shuffle
     res, net = runmodel('''layer {
       name: "data"
@@ -158,9 +158,9 @@ def test_molgrid():
         root_folder: "typesfiles"
       }
     }''')
-    
+
     assert np.sum(np.abs(res['affinity']) < 4) == 4
-    
+
     #stratify by affinity and balance, also shuffle
     res, net = runmodel('''layer {
       name: "data"
@@ -182,6 +182,6 @@ def test_molgrid():
         root_folder: "typesfiles"
       }
     }''')
-    
+
     assert np.sum(np.abs(res['affinity']) < 4) == 4
     assert np.sum(res['label']) == 4
